@@ -1,0 +1,35 @@
+building-work-platform/
+├── config/
+│   └── database.js
+├── public/
+│   ├── css/
+│   │   └── style.css
+│   ├── js/
+│   │   └── main.js
+│   └── images/
+├── views/
+│   ├── partials/
+│   │   ├── header.ejs
+│   │   ├── footer.ejs
+│   │   └── navbar.ejs
+│   ├── admin/
+│   │   └── dashboard.ejs
+│   ├── property-owner/
+│   │   └── dashboard.ejs
+│   ├── tradesman/
+│   │   └── dashboard.ejs
+│   ├── index.ejs
+│   └── login.ejs
+├── routes/
+│   ├── admin.js
+│   ├── auth.js
+│   ├── propertyOwner.js
+│   └── tradesman.js
+├── models/
+│   ├── user.js
+│   ├── project.js
+│   └── bid.js
+├── middleware/
+│   └── auth.js
+├── package.json
+└── server.js 
