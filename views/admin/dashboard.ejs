@@ -53,49 +53,17 @@
                 </div>
             </div>
         </div>
+        <!-- Add User Button -->
+        <div class="row mb-4">
+            <div class="col-12">
+        <!--        <a href="/admin/users/add" class="btn btn-primary">Add New User</a> -->
 
-        <!-- Add User Form -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3>Add New User</h3>
-            </div>
-            <div class="card-body">
-                <form action="/admin/users" method="POST">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">First Name</label>
-                                <input type="text" class="form-control" name="first_name" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Last Name</label>
-                                <input type="text" class="form-control" name="last_name" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" name="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <input type="password" class="form-control" name="password" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">User Type</label>
-                        <select class="form-select" name="user_type" required>
-                            <option value="property_owner">Property Owner</option>
-                            <option value="tradesperson">Tradesperson</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Add User</button>
-                </form>
+                  <a href="/admin/users/add" class="btn btn-primary">Add New User</a>
+
             </div>
         </div>
 
+        
         <!-- Users List -->
         <div class="card">
             <div class="card-header">

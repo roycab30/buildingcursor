@@ -45,6 +45,11 @@ router.get('/users', (req, res) => {
     });
 });
 
+router.get('/users/add', (req, res) => {
+    console.log('Admin dashboard accessed - Trying to add user');
+    res.render('admin/addUser');
+});
+
 // Get user details
 router.get('/users/:id', (req, res) => {
     const sql = 'SELECT * FROM users WHERE user_id = ?';
@@ -68,20 +73,63 @@ router.post('/users/:id/status', (req, res) => {
             console.error(err);
             return res.redirect('/admin/dashboard?error=Failed to update status');
         }
+        console.log('Admin dashboard accessed - Status updated succesfully');
         res.redirect('/admin/dashboard?message=Status updated successfully');
     });
 });
 
 // Delete user (POST method)
-router.post('/users/:id/delete', (req, res) => {
-    const sql = 'DELETE FROM users WHERE user_id = ?';
-    conn.query(sql, [req.params.id], (err, result) => {
-        if (err) {
-            console.error(err);
-            return res.redirect('/admin/dashboard?error=Failed to delete user');
+router.post('/users/:id/delete', async (req, res) => {
+    const userId = req.params.id;
+    console.log('Attempting to delete user:', userId);
+
+    // Get a connection for transaction
+    const connection = await conn.getConnection();
+    
+    try {
+        await connection.beginTransaction();
+        
+        // Check for dependencies in related tables
+        const tables = [
+            { name: 'projects', field: 'property_owner_id' },
+            { name: 'projects', field: 'tradesperson_id' },
+            { name: 'bids', field: 'tradesperson_id' },
+            { name: 'reviews', field: 'reviewer_id' },
+            { name: 'reviews', field: 'reviewee_id' },
+            { name: 'messages', field: 'sender_id' },
+            { name: 'messages', field: 'receiver_id' },
+            { name: 'user_settings', field: 'user_id' }
+        ];
+        
+        // Check each table for dependencies
+        for (const table of tables) {
+            const [rows] = await connection.query(
+                `SELECT COUNT(*) as count FROM ${table.name} WHERE ${table.field} = ?`, 
+                [userId]
+            );
+            
+            if (rows[0].count > 0) {
+                await connection.rollback();
+                connection.release();
+                console.log(`Deletion blocked: User has associated ${table.name} records`);
+                return res.redirect(`/admin/dashboard?error=Cannot delete user: Has associated ${table.name} records`);
+            }
         }
+        
+        // If no dependencies found, proceed with deletion
+        await connection.query('DELETE FROM users WHERE user_id = ?', [userId]);
+        
+        await connection.commit();
+        console.log('User deleted successfully');
         res.redirect('/admin/dashboard?message=User deleted successfully');
-    });
+        
+    } catch (err) {
+        await connection.rollback();
+        console.error('User deletion error:', err);
+        res.redirect('/admin/dashboard?error=Failed to delete user');
+    } finally {
+        connection.release();
+    }
 });
 
 // Add user (POST method)
@@ -243,5 +291,6 @@ router.post('/register', async (req, res) => {
         });
     }
 });
+
 
 module.exports = router; 
