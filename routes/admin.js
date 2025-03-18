@@ -65,6 +65,24 @@ router.get('/users/:id', (req, res) => {
     });
 });
 
+// Get user details for edit
+router.get('/users/:id/edit', async (req, res) => {
+    try {
+        const [users] = await conn.execute('SELECT * FROM users WHERE user_id = ?', [req.params.id]);
+        if (users.length === 0) {
+            return res.redirect('/admin/dashboard?error=User not found');
+        }
+        res.render('admin/editUser', {
+            user: users[0],
+            message: req.query.message,
+            error: req.query.error
+        });
+    } catch (err) {
+        console.error('Error fetching user for edit:', err);
+        res.redirect('/admin/dashboard?error=Failed to fetch user details');
+    }
+});
+
 // Update user status (POST method)
 router.post('/users/:id/status', (req, res) => {
     const sql = 'UPDATE users SET status = ? WHERE user_id = ?';
@@ -77,6 +95,49 @@ router.post('/users/:id/status', (req, res) => {
         res.redirect('/admin/dashboard?message=Status updated successfully');
     });
 });
+
+
+
+
+// Update user details (POST method)
+router.post('/users/:id/edit', (req, res) => {
+    try {   
+    const userId = req.params.id;
+    const { email, password, first_name, last_name, phone, address, city, postal_code, user_type, status, updated_at } = req.body;
+    
+    console.log('Attempting to update user:', userId);
+    
+    const sql = 'UPDATE users SET email = ?, password = ?, first_name =?, last_name = ?, phone = ?, address = ?, city = ?, postal_code = ?, user_type = ?, status = ?, updated_at = ? WHERE user_id = ?';
+    
+    // const result = await new Promise((resolve, reject) => {
+    
+    conn.query(sql, [email, password, first_name, last_name, phone, address, city, postal_code, user_type, status, updated_at, userId], 
+        (err, result) => {
+
+            if (err) {
+                console.error('Error updating user:', err);
+                reject(err);
+                // return res.redirect('/admin/dashboard?error=Failed to update user');
+            } else {
+                console.log('Admin dashboard accessed - User updated successfully');    
+                resolve(result);
+            }
+        }
+    );
+        
+        // console.log('Admin dashboard accessed - User updated successfully');
+        res.redirect('/admin/dashboard?message=User updated successfully');
+    
+    
+
+    } catch (error) {
+        console.log('Trace 5');
+        console.error('Error updating user:', error);
+        res.redirect('/admin/dashboard?error=Failed to update user');
+    }
+});
+
+
 
 // Delete user (POST method)
 router.post('/users/:id/delete', async (req, res) => {
@@ -91,22 +152,25 @@ router.post('/users/:id/delete', async (req, res) => {
         
         // Check for dependencies in related tables
         const tables = [
-            { name: 'projects', field: 'property_owner_id' },
-            { name: 'projects', field: 'tradesperson_id' },
+
+            { name: 'projects', field: 'owner_id' },
             { name: 'bids', field: 'tradesperson_id' },
-            { name: 'reviews', field: 'reviewer_id' },
-            { name: 'reviews', field: 'reviewee_id' },
+
             { name: 'messages', field: 'sender_id' },
             { name: 'messages', field: 'receiver_id' },
-            { name: 'user_settings', field: 'user_id' }
+      
         ];
         
         // Check each table for dependencies
         for (const table of tables) {
+            console.log(`Checking ${table.name} table for user dependencies...`);
+
             const [rows] = await connection.query(
                 `SELECT COUNT(*) as count FROM ${table.name} WHERE ${table.field} = ?`, 
                 [userId]
             );
+            
+            console.log(`Found ${rows[0].count} records in ${table.name} with ${table.field} = ${userId}`);
             
             if (rows[0].count > 0) {
                 await connection.rollback();
@@ -141,6 +205,9 @@ router.post('/users', async (req, res) => {
             email, password, first_name, last_name, user_type, created_at, updated_at
         ) VALUES (?, ?, ?, ?, ?, NOW(), NOW())`;
 
+        const result = await new Promise((resolve, reject) => {
+            // Sunny
+
         conn.query(sql, [
             req.body.email,
             hashedPassword,
@@ -149,14 +216,28 @@ router.post('/users', async (req, res) => {
             req.body.user_type
         ], (err, result) => {
             if (err) {
-                console.error('Error adding user:', err);
-                return res.redirect('/admin/dashboard?error=Failed to add user');
+                // console.error('Error adding user:', err);
+                console.error("Error adding user:", err); // Sunnny
+                reject(err); //Sunny
+                
+                // return res.redirect('/admin/dashboard?error=Failed to add user');
+                } else {
+                console.log("Trace 3");
+                console.log("User added successfully");
+                resolve(result); //Sunny
+                }
             }
-            console.log('User added successfully');
-            res.redirect('/admin/dashboard?message=User added successfully');
-        });
+                // res.redirect('/admin/dashboard?message=User added successfully');
+        );
+
+        res.redirect("/admin/dashboard?message=User added successfully"); //Sunny
+    }); //Sunny
+
     } catch (error) {
-        console.error('Error:', error);
+        console.log("Trace 4");
+        console.error("Error:", error);
+        
+        // console.error('Error:', error);
         res.redirect('/admin/dashboard?error=Failed to create user');
     }
 });
@@ -255,7 +336,7 @@ router.post('/register', async (req, res) => {
             const userId = result.insertId;
 
             // Create user settings
-            await connection.execute(
+/*             await connection.execute(
                 `INSERT INTO user_settings (
                     user_id, 
                     notification_preferences,
@@ -263,7 +344,7 @@ router.post('/register', async (req, res) => {
                     updated_at
                 ) VALUES (?, 'email', NOW(), NOW())`,
                 [userId]
-            );
+            ); */
 
             // Commit transaction
             await connection.commit();
