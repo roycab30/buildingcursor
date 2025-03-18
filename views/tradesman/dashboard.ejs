@@ -3,146 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tradesman Dashboard</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        .dashboard-container {
-            padding: 20px;
-        }
-        .profile-card {
-            background-color: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-        .status-badge {
-            font-size: 0.9em;
-            padding: 5px 10px;
-            border-radius: 15px;
-        }
-        .project-card {
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .tab-content {
-            padding-top: 20px;
-        }
-    </style>
+    <title>Tradesman Dashboard - Building Work Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- Profile Section -->
-        <div class="profile-card">
-            <div class="row">
-                <div class="col-md-8">
-                    <!-- User Basic Information -->
-                    <div class="user-info mb-4">
-                        <h2>Tradesman User Information</h2>
-                        <p><strong>User ID:</strong> <%= user.user_id %></p>
-                        <p><strong>Name:</strong> <%= user.first_name %> <%= user.last_name %></p>
-                        <p><strong>User Type:</strong> <%= user.user_type %></p>
-                    </div>
-
-                    <!-- Tradesperson Profile Information -->
-                    <div class="trade-info">
-                        <h2><%= profile.trade_type %> Profile</h2>
-                        <p><strong>Experience:</strong> <%= profile.experience_years %> years</p>
-                        <p><strong>Hourly Rate:</strong> £<%= profile.hourly_rate %></p>
-                        <p><strong>Service Area:</strong> <%= profile.service_area %> miles</p>
-                    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/tradesman/dashboard">
+                                <i class="bi bi-house-door"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#bidModal">
+                                <i class="bi bi-plus-circle"></i>
+                                Place Bid
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/auth/logout">
+                                <i class="bi bi-box-arrow-right"></i>
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
                 </div>
-                <div class="col-md-4 text-right">
-                    <div class="form-group">
-                        <label>Availability Status:</label>
-                        <select id="availabilityStatus" class="form-control" onchange="updateAvailability()">
-                            <option value="available" <%= profile.availability_status === 'available' ? 'selected' : '' %>>Available</option>
-                            <option value="busy" <%= profile.availability_status === 'busy' ? 'selected' : '' %>>Busy</option>
-                            <option value="unavailable" <%= profile.availability_status === 'unavailable' ? 'selected' : '' %>>Unavailable</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </div>
-            <!-- End of Profile Section -->
+            </nav>
 
-        <!-- Projects Tabs -->
-        <ul class="nav nav-tabs" id="projectTabs" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="available-tab" data-toggle="tab" href="#available" role="tab">
-                    Available Projects <span class="badge badge-primary"><%= availableProjects.length %></span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="active-tab" data-toggle="tab" href="#active" role="tab">
-                    Active Projects <span class="badge badge-success"><%= activeProjects.length %></span>
-                </a>
-            </li>
-        </ul>
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <!-- Profile Section -->
+                <div class="profile-card">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <!-- User Basic Information -->
 
-        <!-- Tab Content -->
-        <div class="tab-content" id="projectTabsContent">
-            <!-- Available Projects -->
-            <div class="tab-pane fade show active" id="available" role="tabpanel">
-                <% if (availableProjects.length === 0) { %>
-                    <div class="alert alert-info">No available projects match your trade category at the moment.</div>
-                <% } else { %>
-                    <% availableProjects.forEach(project => { %>
-                        <div class="card project-card">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <h5 class="card-title"><%= project.title %></h5>
-                                        <h6 class="card-subtitle mb-2 text-muted">
-                                            Posted by: <%= project.owner_first_name %> <%= project.owner_last_name %>
-                                        </h6>
-                                        <p class="card-text"><%= project.description %></p>
-                                        <p><strong>Category:</strong> <%= project.category_name %></p>
-                                        <p><strong>Budget:</strong> £<%= project.budget %></p>
-                                    </div>
-                                    <div class="col-md-4 text-right">
-                                        <button class="btn btn-primary" onclick="showBidModal('<%= project.project_id %>')">
-                                            Place Bid
-                                        </button>
-                                    </div>
-                                </div>
+                            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                                <h1 class="h2">Tradesman Dashboard</h1>
+                            </div>
+
+                            <div class="user-info mb-4">
+                                <h2>User Information</h2>
+                                <p><strong>User ID:</strong> <%= user.user_id %></p>
+                                <p><strong>Name:</strong> <%= user.first_name %> <%= user.last_name %></p>
+                                <p><strong>User Type:</strong> <%= user.user_type %></p>
+                            </div>
+
+                            <!-- Tradesperson Profile Information -->
+                            <div class="trade-info">
+                                <h2><%= profile.trade_type %> Profile</h2>
+                                <p><strong>Experience:</strong> <%= profile.experience_years %> years</p>
+                                <p><strong>Hourly Rate:</strong> £<%= profile.hourly_rate %></p>
+                                <p><strong>Service Area:</strong> <%= profile.service_area %> miles</p>
                             </div>
                         </div>
-                    <% }); %>
-                <% } %>
-            </div>
-
-            <!-- Active Projects -->
-            <div class="tab-pane fade" id="active" role="tabpanel">
-                <% if (activeProjects.length === 0) { %>
-                    <div class="alert alert-info">You don't have any active projects.</div>
-                <% } else { %>
-                    <% activeProjects.forEach(project => { %>
-                        <div class="card project-card">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <h5 class="card-title"><%= project.title %></h5>
-                                        <h6 class="card-subtitle mb-2 text-muted">
-                                            Client: <%= project.owner_first_name %> <%= project.owner_last_name %>
-                                        </h6>
-                                        <p class="card-text"><%= project.description %></p>
-                                        <p><strong>Bid Amount:</strong> £<%= project.bid_amount %></p>
-                                        <p><strong>Status:</strong> 
-                                            <span class="badge badge-info"><%= project.status %></span>
-                                        </p>
-                                    </div>
-                                    <div class="col-md-4 text-right">
-                                        <button class="btn btn-success" onclick="viewProjectDetails('<%= project.project_id %>')">
-                                            View Details
-                                        </button>
-                                    </div>
-                                </div>
+                        <div class="col-md-4 text-right">
+                            <div class="form-group">
+                                <label>Availability Status:</label>
+                                <select id="availabilityStatus" class="form-control" onchange="updateAvailability()">
+                                    <option value="available" <%= profile.availability_status === 'available' ? 'selected' : '' %>>Available</option>
+                                    <option value="busy" <%= profile.availability_status === 'busy' ? 'selected' : '' %>>Busy</option>
+                                    <option value="unavailable" <%= profile.availability_status === 'unavailable' ? 'selected' : '' %>>Unavailable</option>
+                                </select>
                             </div>
                         </div>
-                    <% }); %>
-                <% } %>
-            </div>
+                    </div>
+                </div>
+                <!-- End of Profile Section -->
+
+                <!-- Projects Tabs -->
+                <ul class="nav nav-tabs" id="projectTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="available-tab" data-toggle="tab" href="#available" role="tab">
+                            Available Projects <span class="badge bg-primary"><%= availableProjects.length %></span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="active-tab" data-toggle="tab" href="#active" role="tab">
+                            Active Projects <span class="badge bg-success"><%= activeProjects.length %></span>
+                        </a>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="projectTabsContent">
+                    <!-- Available Projects -->
+                    <div class="tab-pane fade show active" id="available" role="tabpanel">
+                        <% if (availableProjects.length === 0) { %>
+                            <div class="alert alert-info">No available projects match your trade category at the moment.</div>
+                        <% } else { %>
+                            <% availableProjects.forEach(project => { %>
+                                <div class="card project-card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h5 class="card-title"><%= project.title %></h5>
+                                                <h6 class="card-subtitle mb-2 text-muted">
+                                                    Posted by: <%= project.owner_first_name %> <%= project.owner_last_name %>
+                                                </h6>
+                                                <p class="card-text"><%= project.description %></p>
+                                                <p><strong>Category:</strong> <%= project.category_name %></p>
+                                                <p><strong>Budget:</strong> £<%= project.budget %></p>
+                                            </div>
+                                            <div class="col-md-4 text-right">
+                                                <button class="btn btn-primary" onclick="showBidModal('<%= project.project_id %>')">
+                                                    Place Bid
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } %>
+                    </div>
+
+                    <!-- Active Projects -->
+                    <div class="tab-pane fade" id="active" role="tabpanel">
+                        <% if (activeProjects.length === 0) { %>
+                            <div class="alert alert-info">You don't have any active projects.</div>
+                        <% } else { %>
+                            <% activeProjects.forEach(project => { %>
+                                <div class="card project-card">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h5 class="card-title"><%= project.title %></h5>
+                                                <h6 class="card-subtitle mb-2 text-muted">
+                                                    Client: <%= project.owner_first_name %> <%= project.owner_last_name %>
+                                                </h6>
+                                                <p class="card-text"><%= project.description %></p>
+                                                <p><strong>Bid Amount:</strong> £<%= project.bid_amount %></p>
+                                                <p><strong>Status:</strong> 
+                                                    <span class="badge bg-info"><%= project.status %></span>
+                                                </p>
+                                            </div>
+                                            <div class="col-md-4 text-right">
+                                                <button class="btn btn-success" onclick="viewProjectDetails('<%= project.project_id %>')">
+                                                    View Details
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } %>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 
@@ -249,4 +262,4 @@
         }
     </script>
 </body>
-</html> 
+</html>
